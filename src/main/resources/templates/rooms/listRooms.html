@@ -6,6 +6,7 @@
 </head>
 <body>
 <h3>会議室</h3>
+<h4>Index <span th:text="${T(java.lang.System).getenv('CF_INSTANCE_INDEX')}"></span></h4>
 <a th:href="@{'/rooms/' + ${date.minusDays(1)}}">&lt; 前日</a>
 <span th:text="|${#temporals.format(date, 'yyyy/M/d')}の会議室|">2016/5/20の会議室</span>
 <a th:href="@{'/rooms/' + ${date.plusDays(1)}}">翌日 &gt;</a>

@@ -9,4 +9,9 @@ public class LoginController {
 	String loginForm() {
 		return "login/loginForm";
 	}
+
+	@RequestMapping("kill")
+	void kill() {
+		System.exit(-1);
+	}
 }

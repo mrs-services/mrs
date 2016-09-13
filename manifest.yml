@@ -6,5 +6,6 @@ applications:
   path: target/mrs-0.0.1-SNAPSHOT.jar
   services:
   - mrs-db
+  - mrs-log
   env:
     SPRING_DATASOURCE_INITIALIZE: false

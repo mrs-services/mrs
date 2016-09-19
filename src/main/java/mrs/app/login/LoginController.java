@@ -1,16 +1,16 @@
 package mrs.app.login;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class LoginController {
-	@RequestMapping("loginForm")
+	@GetMapping("loginForm")
 	String loginForm() {
 		return "login/loginForm";
 	}
 
-	@RequestMapping("kill")
+	@GetMapping("kill")
 	void kill() {
 		System.exit(-1);
 	}

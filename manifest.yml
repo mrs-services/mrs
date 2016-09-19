@@ -1,7 +1,7 @@
 applications:
 - name: mrs
   memory: 512m
-  instance: 2
+  instances: 2
   buildpack: java_buildpack
   path: target/mrs-0.0.1-SNAPSHOT.jar
   services:

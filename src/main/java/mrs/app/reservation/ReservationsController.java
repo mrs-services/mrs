@@ -46,7 +46,6 @@ public class ReservationsController {
 	String reserveForm(
 			@DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @PathVariable("date") LocalDate date,
 			@PathVariable("roomId") Integer roomId, Model model, Principal principal) {
-		System.out.println(principal);
 		ReservableRoom.Id reservableRoomId = new ReservableRoom.Id(roomId, date);
 		LocalTime baseTime = LocalTime.of(0, 0);
 		List<LocalTime> timeList = IntStream.range(0, 24 * 2)

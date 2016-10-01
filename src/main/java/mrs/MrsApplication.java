@@ -1,12 +1,9 @@
 package mrs;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.RequestInterceptor;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.oauth2.client.EnableOAuth2Sso;
-import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
@@ -16,7 +13,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.datetime.standard.DateTimeFormatterRegistrar;
 import org.springframework.hateoas.hal.Jackson2HalModule;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.session.data.redis.config.ConfigureRedisAction;
@@ -61,15 +57,8 @@ public class MrsApplication {
 	}
 
 	@Bean
-	InitializingBean messageConvertersInitializer(
-			HttpMessageConverters messageConverters) {
-		return () -> messageConverters.getConverters().stream()
-				.filter(c -> c instanceof MappingJackson2HttpMessageConverter).findAny()
-				.ifPresent(c -> {
-					MappingJackson2HttpMessageConverter converter = (MappingJackson2HttpMessageConverter) c;
-					ObjectMapper objectMapper = converter.getObjectMapper();
-					objectMapper.registerModule(new Jackson2HalModule());
-				});
+	Jackson2HalModule jackson2HalModule() {
+		return new Jackson2HalModule();
 	}
 
 	@Bean

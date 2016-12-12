@@ -1,7 +1,6 @@
 package mrs.app.reservation;
 
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.RequestEntity;
 import org.springframework.stereotype.Component;
@@ -25,9 +24,8 @@ public class ReservationClientImpl implements ReservationClient {
 		UriComponents uri = UriComponentsBuilder.fromHttpUrl("http://reservation")
 				.pathSegment("api", "reservations", "search",
 						"findByReservableRoom_ReservableRoomIdOrderByStartTimeAsc")
-				.build();
-		return restTemplate.exchange(
-				RequestEntity.get(uri.toUri()).accept(MediaTypes.HAL_JSON).build(), ref)
+				.queryParam("reservableRoomId", reservableRoomId).build();
+		return restTemplate.exchange(RequestEntity.get(uri.toUri()).build(), ref)
 				.getBody();
 	}
 

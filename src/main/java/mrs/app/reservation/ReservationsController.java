@@ -7,10 +7,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import mrs.app.room.MeetingRoomClient;
-import mrs.app.room.ReservableRoom;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.hateoas.Resources;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +17,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import mrs.app.room.MeetingRoomClient;
+import mrs.app.room.ReservableRoom;
 
 @Controller
 @RequestMapping("reservations/{date}/{roomId}")
@@ -51,8 +53,9 @@ public class ReservationsController {
 		List<LocalTime> timeList = IntStream.range(0, 24 * 2)
 				.mapToObj(i -> baseTime.plusMinutes(30 * i)).collect(Collectors.toList());
 		model.addAttribute("room", meetingRoomClient.findOne(roomId));
-		model.addAttribute("reservations", reservationClient
-				.findByReservableRoomId(reservableRoomId.toString()).getContent());
+		Resources<Reservation> reservations = reservationClient
+				.findByReservableRoomId(reservableRoomId.toString());
+		model.addAttribute("reservations", reservations.getContent());
 		model.addAttribute("timeList", timeList);
 		return "reservations/reserveForm";
 	}

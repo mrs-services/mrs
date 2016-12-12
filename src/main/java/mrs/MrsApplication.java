@@ -1,8 +1,5 @@
 package mrs;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import feign.RequestInterceptor;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.oauth2.client.EnableOAuth2Sso;
@@ -17,7 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.datetime.standard.DateTimeFormatterRegistrar;
 import org.springframework.hateoas.hal.Jackson2HalModule;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
@@ -25,6 +22,8 @@ import org.springframework.session.data.redis.config.ConfigureRedisAction;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
+
+import feign.RequestInterceptor;
 
 @SpringBootApplication
 @EnableOAuth2Sso
@@ -65,20 +64,18 @@ public class MrsApplication {
 	@Bean
 	@LoadBalanced
 	OAuth2RestTemplate restTemplate(OAuth2ClientContext oauth2ClientContext,
-									OAuth2ProtectedResourceDetails resource) {
-		return new OAuth2RestTemplate(resource, oauth2ClientContext);
+			OAuth2ProtectedResourceDetails resource,
+			HttpMessageConverters messageConverters) {
+		OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(resource,
+				oauth2ClientContext);
+		restTemplate.setMessageConverters(messageConverters.getConverters());
+		return restTemplate;
 	}
 
 	@Bean
-	InitializingBean messageConvertersInitializer(
-			HttpMessageConverters messageConverters) {
-		return () -> messageConverters.getConverters().stream()
-				.filter(c -> c instanceof MappingJackson2HttpMessageConverter).findAny()
-				.ifPresent(c -> {
-					MappingJackson2HttpMessageConverter converter = (MappingJackson2HttpMessageConverter) c;
-					ObjectMapper objectMapper = converter.getObjectMapper();
-					objectMapper.registerModule(new Jackson2HalModule());
-				});
+	Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder() {
+		return new Jackson2ObjectMapperBuilder()
+				.modulesToInstall(new Jackson2HalModule());
 	}
 
 	@Bean

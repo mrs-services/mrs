@@ -1,11 +1,15 @@
 package mrs;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.RequestInterceptor;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.oauth2.client.EnableOAuth2Sso;
+import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.cloud.netflix.feign.FeignFormatterRegistrar;
 import org.springframework.cloud.security.oauth2.client.feign.OAuth2FeignRequestInterceptor;
@@ -13,7 +17,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.datetime.standard.DateTimeFormatterRegistrar;
 import org.springframework.hateoas.hal.Jackson2HalModule;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
+import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.session.data.redis.config.ConfigureRedisAction;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
@@ -57,8 +63,22 @@ public class MrsApplication {
 	}
 
 	@Bean
-	Jackson2HalModule jackson2HalModule() {
-		return new Jackson2HalModule();
+	@LoadBalanced
+	OAuth2RestTemplate restTemplate(OAuth2ClientContext oauth2ClientContext,
+									OAuth2ProtectedResourceDetails resource) {
+		return new OAuth2RestTemplate(resource, oauth2ClientContext);
+	}
+
+	@Bean
+	InitializingBean messageConvertersInitializer(
+			HttpMessageConverters messageConverters) {
+		return () -> messageConverters.getConverters().stream()
+				.filter(c -> c instanceof MappingJackson2HttpMessageConverter).findAny()
+				.ifPresent(c -> {
+					MappingJackson2HttpMessageConverter converter = (MappingJackson2HttpMessageConverter) c;
+					ObjectMapper objectMapper = converter.getObjectMapper();
+					objectMapper.registerModule(new Jackson2HalModule());
+				});
 	}
 
 	@Bean

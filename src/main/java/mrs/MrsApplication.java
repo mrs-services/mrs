@@ -7,12 +7,8 @@ import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
-import org.springframework.cloud.netflix.feign.EnableFeignClients;
-import org.springframework.cloud.netflix.feign.FeignFormatterRegistrar;
-import org.springframework.cloud.security.oauth2.client.feign.OAuth2FeignRequestInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.format.datetime.standard.DateTimeFormatterRegistrar;
 import org.springframework.hateoas.hal.Jackson2HalModule;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
@@ -23,12 +19,9 @@ import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
 
-import feign.RequestInterceptor;
-
 @SpringBootApplication
 @EnableOAuth2Sso
 @EnableDiscoveryClient
-@EnableFeignClients
 @EnableCircuitBreaker
 public class MrsApplication {
 
@@ -55,13 +48,6 @@ public class MrsApplication {
 	}
 
 	@Bean
-	RequestInterceptor oauth2FeignRequestInterceptor(
-			OAuth2ClientContext oauth2ClientContext,
-			OAuth2ProtectedResourceDetails resource) {
-		return new OAuth2FeignRequestInterceptor(oauth2ClientContext, resource);
-	}
-
-	@Bean
 	@LoadBalanced
 	OAuth2RestTemplate restTemplate(OAuth2ClientContext oauth2ClientContext,
 			OAuth2ProtectedResourceDetails resource,
@@ -77,14 +63,4 @@ public class MrsApplication {
 		return new Jackson2ObjectMapperBuilder()
 				.modulesToInstall(new Jackson2HalModule());
 	}
-
-	@Bean
-	FeignFormatterRegistrar localDateFeignFormatterRegistrar() {
-		return formatterRegistry -> {
-			DateTimeFormatterRegistrar registrar = new DateTimeFormatterRegistrar();
-			registrar.setUseIsoFormat(true);
-			registrar.registerFormatters(formatterRegistry);
-		};
-	}
-
 }

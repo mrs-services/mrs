@@ -32,7 +32,7 @@ public class ReservableRoomClientImpl implements ReservableRoomClient {
 	@Override
 	public Resources<ReservableRoom> findByReservedDate(LocalDate reservedDate) {
 		UriComponents uri = UriComponentsBuilder.fromHttpUrl("http://reservation")
-				.pathSegment("api", "meetingRooms", "search",
+				.pathSegment("api", "reservableRooms", "search",
 						"findByReservableRoomId_reservedDateOrderByReservableRoomId_roomIdAsc")
 				.queryParam("reservedDate", reservedDate).build();
 		return restTemplate.exchange(RequestEntity.get(uri.toUri()).build(), ref)

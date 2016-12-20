@@ -10,8 +10,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 @Component
 public class ReservationClientImpl implements ReservationClient {
 	private final RestTemplate restTemplate;
@@ -40,7 +38,7 @@ public class ReservationClientImpl implements ReservationClient {
 		UriComponents uri = UriComponentsBuilder.fromHttpUrl("http://reservation")
 				.pathSegment("v1", "reservations").build();
 		restTemplate.exchange(RequestEntity.post(uri.toUri()).body(reservation),
-				JsonNode.class);
+				Void.class);
 	}
 
 	public void checkReservation(Reservation reservation) {
@@ -48,7 +46,7 @@ public class ReservationClientImpl implements ReservationClient {
 		UriComponents uri = UriComponentsBuilder.fromHttpUrl("http://reservation")
 				.pathSegment("v1", "reservations", "check").build();
 		restTemplate.exchange(RequestEntity.post(uri.toUri()).body(reservation),
-				JsonNode.class);
+				Void.class);
 	}
 
 	@Override

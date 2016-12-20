@@ -72,9 +72,8 @@ public class ReservationsController {
 					form.getEndTime());
 			String reservableRoom = UriComponentsBuilder
 					.fromUri(loadBalancerClient.choose("reservation").getUri())
-					.pathSegment("api", "reservableRooms",
-							new ReservableRoom.Id(roomId, date).toString())
-					.toUriString();
+					.pathSegment("v1", "reservableRooms",
+							new ReservableRoom.Id(roomId, date).toString()).toUriString();
 			reservation.setReservableRoom(reservableRoom);
 			reservationClient.reserve(reservation);
 		}

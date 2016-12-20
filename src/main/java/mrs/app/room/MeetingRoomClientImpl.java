@@ -22,16 +22,15 @@ public class MeetingRoomClientImpl implements MeetingRoomClient {
 	@Override
 	public MeetingRoom findOne(Integer roomId) {
 		UriComponents uri = UriComponentsBuilder.fromHttpUrl("http://reservation")
-				.pathSegment("api", "meetingRooms", String.valueOf(roomId)).build();
-		return restTemplate
-				.exchange(RequestEntity.get(uri.toUri()).build(), MeetingRoom.class)
-				.getBody();
+				.pathSegment("v1", "meetingRooms", String.valueOf(roomId)).build();
+		return restTemplate.exchange(RequestEntity.get(uri.toUri()).build(),
+				MeetingRoom.class).getBody();
 	}
 
 	@Override
 	public Resources<MeetingRoom> findAll() {
 		UriComponents uri = UriComponentsBuilder.fromHttpUrl("http://reservation")
-				.pathSegment("api", "meetingRooms").build();
+				.pathSegment("v1", "meetingRooms").build();
 		return restTemplate.exchange(RequestEntity.get(uri.toUri()).build(), ref)
 				.getBody();
 	}

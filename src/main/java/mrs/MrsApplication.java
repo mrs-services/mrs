@@ -19,6 +19,8 @@ import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 @SpringBootApplication
 @EnableOAuth2Sso
 @EnableDiscoveryClient
@@ -51,10 +53,13 @@ public class MrsApplication {
 	@LoadBalanced
 	OAuth2RestTemplate restTemplate(OAuth2ClientContext oauth2ClientContext,
 			OAuth2ProtectedResourceDetails resource,
-			HttpMessageConverters messageConverters) {
+			HttpMessageConverters messageConverters, ObjectMapper objectMapper) {
 		OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(resource,
 				oauth2ClientContext);
+		// Set same message converters as RestTemplate to use Jackson2HalModule
 		restTemplate.setMessageConverters(messageConverters.getConverters());
+		// Handle non-OAuth format error
+		restTemplate.setErrorHandler(new ResourceErrorHandler(objectMapper));
 		return restTemplate;
 	}
 

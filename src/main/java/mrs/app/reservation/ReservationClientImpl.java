@@ -4,6 +4,8 @@ import static org.springframework.http.RequestEntity.get;
 import static org.springframework.http.RequestEntity.post;
 import static org.springframework.web.util.UriComponentsBuilder.fromHttpUrl;
 
+import java.util.Collections;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -12,6 +14,8 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 import mrs.ReservationSource;
 import mrs.app.auth.AccessToken;
@@ -35,6 +39,7 @@ public class ReservationClientImpl implements ReservationClient {
 	}
 
 	@Override
+	@HystrixCommand(fallbackMethod = "findByReservableRoomIdFallback")
 	public Resources<Reservation> findByReservableRoomId(String reservableRoomId) {
 		return restTemplate
 				.exchange(get(fromHttpUrl("http://reservation")
@@ -46,13 +51,24 @@ public class ReservationClientImpl implements ReservationClient {
 				.getBody();
 	}
 
+	public Resources<Reservation> findByReservableRoomIdFallback(
+			String reservableRoomId) {
+		log.warn("findByReservableRoomIdFallback");
+		return new Resources<>(Collections.emptyList());
+	}
+
 	@Override
+	@HystrixCommand(fallbackMethod = "checkReservationFallback")
 	public void checkReservation(Reservation reservation) {
 		log.info("check reservation {}", reservation);
 		restTemplate.exchange(post(fromHttpUrl("http://reservation")
 				.pathSegment("v1", "reservations", "check").build().toUri())
 						.body(reservation),
 				Void.class);
+	}
+
+	public void checkReservationFallback(Reservation reservation) {
+		log.warn("checkReservationFallback({})", reservation);
 	}
 
 	@Override

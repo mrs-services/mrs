@@ -7,6 +7,8 @@ import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.cloud.stream.annotation.EnableBinding;
+import org.springframework.cloud.stream.messaging.Source;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.hateoas.hal.Jackson2HalModule;
@@ -20,11 +22,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @SpringBootApplication
 @EnableOAuth2Sso
 @EnableDiscoveryClient
 @EnableCircuitBreaker
+@EnableBinding(Source.class)
 public class MrsApplication {
 
 	public static void main(String[] args) {
@@ -66,6 +71,7 @@ public class MrsApplication {
 	@Bean
 	Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder() {
 		return new Jackson2ObjectMapperBuilder()
-				.modulesToInstall(new Jackson2HalModule());
+				.modulesToInstall(new Jackson2HalModule(), new JavaTimeModule())
+				.featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 	}
 }

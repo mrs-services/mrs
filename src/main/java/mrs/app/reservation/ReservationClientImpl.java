@@ -65,8 +65,9 @@ public class ReservationClientImpl implements ReservationClient {
 
 	@Override
 	public void cancel(Integer reservationId) {
+		log.info("cancel reservation {}", reservationId);
 		restTemplate.exchange(delete(fromHttpUrl("http://reservation")
-				.pathSegment("v1", "reservations", reservationId.toString()).build()
+				.pathSegment("v1", "reservations", String.valueOf(reservationId)).build()
 				.toUri()).build(), Void.class);
 	}
 }

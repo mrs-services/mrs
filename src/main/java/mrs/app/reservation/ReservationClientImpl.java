@@ -1,11 +1,11 @@
 package mrs.app.reservation;
 
-import static org.springframework.http.RequestEntity.*;
+import static org.springframework.http.RequestEntity.get;
+import static org.springframework.http.RequestEntity.post;
 import static org.springframework.web.util.UriComponentsBuilder.fromHttpUrl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cloud.stream.messaging.Source;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.Resources;
 import org.springframework.messaging.Message;
@@ -13,12 +13,13 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import mrs.ReservationSource;
 import mrs.app.auth.AccessToken;
 
 @Component
 public class ReservationClientImpl implements ReservationClient {
 	private final RestTemplate restTemplate;
-	private final Source source;
+	private final ReservationSource reservationSource;
 	private final AccessToken accessToken;
 
 	private final ParameterizedTypeReference<Resources<Reservation>> ref = new ParameterizedTypeReference<Resources<Reservation>>() {
@@ -26,10 +27,10 @@ public class ReservationClientImpl implements ReservationClient {
 	private static final Logger log = LoggerFactory
 			.getLogger(ReservationClientImpl.class);
 
-	public ReservationClientImpl(RestTemplate restTemplate, Source source,
-			AccessToken accessToken) {
+	public ReservationClientImpl(RestTemplate restTemplate,
+			ReservationSource reservationSource, AccessToken accessToken) {
 		this.restTemplate = restTemplate;
-		this.source = source;
+		this.reservationSource = reservationSource;
 		this.accessToken = accessToken;
 	}
 
@@ -46,16 +47,7 @@ public class ReservationClientImpl implements ReservationClient {
 	}
 
 	@Override
-	public void reserve(Reservation reservation) {
-		checkReservation(reservation);
-		Message<ReserveEvent> message = MessageBuilder
-				.withPayload(new ReserveEvent(reservation.getReservableRoom(),
-						reservation.getStartTime(), reservation.getEndTime()))
-				.setHeader(AccessToken.MESSAGE_HEADER, accessToken.value()).build();
-		source.output().send(message);
-	}
-
-	void checkReservation(Reservation reservation) {
+	public void checkReservation(Reservation reservation) {
 		log.info("check reservation {}", reservation);
 		restTemplate.exchange(post(fromHttpUrl("http://reservation")
 				.pathSegment("v1", "reservations", "check").build().toUri())
@@ -64,10 +56,21 @@ public class ReservationClientImpl implements ReservationClient {
 	}
 
 	@Override
+	public void reserve(Reservation reservation) {
+		log.info("reserve {}", reservation);
+		Message<ReserveEvent> message = MessageBuilder
+				.withPayload(new ReserveEvent(reservation.getReservableRoom(),
+						reservation.getStartTime(), reservation.getEndTime()))
+				.setHeader(AccessToken.MESSAGE_HEADER, accessToken.value()).build();
+		reservationSource.reserveOutput().send(message);
+	}
+
+	@Override
 	public void cancel(Integer reservationId) {
 		log.info("cancel reservation {}", reservationId);
-		restTemplate.exchange(delete(fromHttpUrl("http://reservation")
-				.pathSegment("v1", "reservations", String.valueOf(reservationId)).build()
-				.toUri()).build(), Void.class);
+		Message<CancelEvent> message = MessageBuilder
+				.withPayload(new CancelEvent(reservationId))
+				.setHeader(AccessToken.MESSAGE_HEADER, accessToken.value()).build();
+		reservationSource.cancelOutput().send(message);
 	}
 }

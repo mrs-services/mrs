@@ -75,6 +75,7 @@ public class ReservationsController {
 					.pathSegment("v1", "reservableRooms",
 							new ReservableRoom.Id(roomId, date).toString()).toUriString();
 			reservation.setReservableRoom(reservableRoom);
+			reservationClient.checkReservation(reservation);
 			reservationClient.reserve(reservation);
 		}
 		catch (RuntimeException e) {

@@ -1,17 +1,17 @@
 package mrs.app.reservation;
 
+import static org.springframework.http.RequestEntity.*;
+import static org.springframework.web.util.UriComponentsBuilder.fromHttpUrl;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.stream.messaging.Source;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.Resources;
-import org.springframework.http.RequestEntity;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import mrs.app.auth.AccessToken;
 
@@ -35,10 +35,13 @@ public class ReservationClientImpl implements ReservationClient {
 
 	@Override
 	public Resources<Reservation> findByReservableRoomId(String reservableRoomId) {
-		UriComponents uri = UriComponentsBuilder.fromHttpUrl("http://reservation")
-				.pathSegment("v1", "reservations", "search", "findByReservableRoomId")
-				.queryParam("reservableRoomId", reservableRoomId).build();
-		return restTemplate.exchange(RequestEntity.get(uri.toUri()).build(), ref)
+		return restTemplate
+				.exchange(get(fromHttpUrl("http://reservation")
+						.pathSegment("v1", "reservations", "search",
+								"findByReservableRoomId")
+						.queryParam("reservableRoomId", reservableRoomId).build().toUri())
+								.build(),
+						ref)
 				.getBody();
 	}
 
@@ -54,16 +57,16 @@ public class ReservationClientImpl implements ReservationClient {
 
 	public void checkReservation(Reservation reservation) {
 		log.info("check reservation {}", reservation);
-		UriComponents uri = UriComponentsBuilder.fromHttpUrl("http://reservation")
-				.pathSegment("v1", "reservations", "check").build();
-		restTemplate.exchange(RequestEntity.post(uri.toUri()).body(reservation),
+		restTemplate.exchange(post(fromHttpUrl("http://reservation")
+				.pathSegment("v1", "reservations", "check").build().toUri())
+						.body(reservation),
 				Void.class);
 	}
 
 	@Override
 	public void cancel(Integer reservationId) {
-		UriComponents uri = UriComponentsBuilder.fromHttpUrl("http://reservation")
-				.pathSegment("v1", "reservations", reservationId.toString()).build();
-		restTemplate.exchange(RequestEntity.delete(uri.toUri()).build(), Void.class);
+		restTemplate.exchange(delete(fromHttpUrl("http://reservation")
+				.pathSegment("v1", "reservations", reservationId.toString()).build()
+				.toUri()).build(), Void.class);
 	}
 }

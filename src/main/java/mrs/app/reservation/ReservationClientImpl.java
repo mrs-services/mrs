@@ -55,7 +55,7 @@ public class ReservationClientImpl implements ReservationClient {
 		source.output().send(message);
 	}
 
-	public void checkReservation(Reservation reservation) {
+	void checkReservation(Reservation reservation) {
 		log.info("check reservation {}", reservation);
 		restTemplate.exchange(post(fromHttpUrl("http://reservation")
 				.pathSegment("v1", "reservations", "check").build().toUri())

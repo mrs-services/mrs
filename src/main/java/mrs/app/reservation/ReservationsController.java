@@ -1,5 +1,7 @@
 package mrs.app.reservation;
 
+import static org.springframework.web.util.UriComponentsBuilder.fromHttpUrl;
+
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -7,7 +9,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.Resources;
 import org.springframework.security.access.AccessDeniedException;
@@ -16,7 +17,6 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import mrs.app.room.MeetingRoomClient;
 import mrs.app.room.ReservableRoom;
@@ -26,13 +26,11 @@ import mrs.app.room.ReservableRoom;
 public class ReservationsController {
 	private final ReservationClient reservationClient;
 	private final MeetingRoomClient meetingRoomClient;
-	private final LoadBalancerClient loadBalancerClient;
 
 	public ReservationsController(ReservationClient reservationClient,
-			MeetingRoomClient meetingRoomClient, LoadBalancerClient loadBalancerClient) {
+			MeetingRoomClient meetingRoomClient) {
 		this.reservationClient = reservationClient;
 		this.meetingRoomClient = meetingRoomClient;
-		this.loadBalancerClient = loadBalancerClient;
 	}
 
 	@ModelAttribute
@@ -70,11 +68,10 @@ public class ReservationsController {
 		try {
 			Reservation reservation = new Reservation(form.getStartTime(),
 					form.getEndTime());
-			String reservableRoom = UriComponentsBuilder
-					.fromUri(loadBalancerClient.choose("reservation").getUri())
+			reservation.setReservableRoom(fromHttpUrl("http://reservation")
 					.pathSegment("v1", "reservableRooms",
-							new ReservableRoom.Id(roomId, date).toString()).toUriString();
-			reservation.setReservableRoom(reservableRoom);
+							new ReservableRoom.Id(roomId, date).toString())
+					.toUriString());
 			reservationClient.checkReservation(reservation);
 			reservationClient.reserve(reservation);
 		}

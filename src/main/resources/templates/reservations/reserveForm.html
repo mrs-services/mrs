@@ -11,6 +11,8 @@
     <a th:href="@{'/rooms/' + ${date}}">会議室一覧へ</a>
 </div>
 
+<div th:utext="${@notificationView.list(#authentication.principal)}"></div>
+
 <p style="color: red" th:if="${error != null}" th:text="${error}"></p>
 
 <form th:object="${reservationForm}"

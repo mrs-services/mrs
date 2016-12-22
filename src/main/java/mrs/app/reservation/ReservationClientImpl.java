@@ -13,6 +13,7 @@ import org.springframework.hateoas.Resources;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
@@ -58,7 +59,8 @@ public class ReservationClientImpl implements ReservationClient {
 	}
 
 	@Override
-	@HystrixCommand(fallbackMethod = "checkReservationFallback")
+	@HystrixCommand(fallbackMethod = "checkReservationFallback", ignoreExceptions = {
+			RestClientResponseException.class })
 	public void checkReservation(Reservation reservation) {
 		log.info("check reservation {}", reservation);
 		restTemplate.exchange(post(fromHttpUrl("http://reservation")
